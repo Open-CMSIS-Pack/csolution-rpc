@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "api"
+		},
+		{
+			"path": "examples/vscode-extension-client"
 		}
 	],
 	"settings": {}
