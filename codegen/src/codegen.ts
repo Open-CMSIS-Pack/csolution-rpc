@@ -304,6 +304,31 @@ using namespace jsonrpccxx;\n`;
     return content;
   }
 
+  public genToJson(members: Member[]) : string {
+    let content = '';
+    for (const element of members) {
+      const cppToJson = `to_json(j, "${element.name}", s.${this.kebabToCamel(element.name)});`;
+      content += `    ${cppToJson}\n`;
+    }
+    return content;
+  }
+
+  public genParentToJson(struct: Struct) : string {
+    let content = '';
+    if (struct.extends) {
+      for (const parent of struct.extends) {
+        if (parent in this.structs) {
+          const parentStruct = this.structs[parent];
+          content += this.genParentToJson(parentStruct);
+          if (parentStruct.members) {
+            content += this.genToJson(parentStruct.members);
+          }
+        }
+      }
+    }
+    return content;
+  }
+
   public genCppNamespace() : string {
     let content = `namespace RpcArgs {\n`;
 
@@ -352,9 +377,9 @@ using namespace jsonrpccxx;\n`;
       const struct = this.structs[name];
       if (struct.members) {
         content += `  inline void to_json(nlohmann::json& j, const ${name}& s) {\n`;
-        for (const element of struct.members) {
-          const cppToJson = `to_json(j, "${element.name}", s.${this.kebabToCamel(element.name)});`;
-          content += `    ${cppToJson}\n`;
+        content += this.genParentToJson(struct);
+        if (struct.members) {
+          content += this.genToJson(struct.members);
         }
         content += `  }\n`;
       }
