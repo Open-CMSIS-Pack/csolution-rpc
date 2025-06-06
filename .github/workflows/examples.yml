@@ -1,16 +1,16 @@
-name: bridge
+name: examples
 on:
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/bridge.yml'
-      - 'bridge/**'
+      - '.github/workflows/examples.yml'
+      - 'examples/**'
       - '!**/*.md'
   pull_request:
     paths:
-      - '.github/workflows/bridge.yml'
-      - 'bridge/**'
+      - '.github/workflows/examples.yml'
+      - 'examples/**'
       - '!**/*.md'
 
 concurrency:
@@ -26,7 +26,7 @@ jobs:
       ${{ github.event_name == 'pull_request' }}
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    name: 'Test bridge'
+    name: 'Test examples'
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -46,8 +46,8 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: bridge
+        working-directory: examples/vscode-extension-client
 
       - name: Run linter
         run: npm run lint
-        working-directory: bridge
+        working-directory: examples/vscode-extension-client
