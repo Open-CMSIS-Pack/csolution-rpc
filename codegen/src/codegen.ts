@@ -232,7 +232,7 @@ using namespace jsonrpccxx;\n`;
           this.collectStructs(parent, item);
         } else if (item.$ref) {
           const ref = item.$ref.match(/^#\/components\/schemas\/(.*)/);
-          this.structs[parent] ??= { description: obj.description }; 
+          this.structs[parent] ??= { description: obj.description };
           (this.structs[parent].extends ??= []).push(ref ? ref[1] : '');
         }
       }

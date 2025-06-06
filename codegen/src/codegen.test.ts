@@ -3,7 +3,7 @@ import {Codegen} from './codegen.js';
 import fs from 'fs';
 
 describe('codegen', () => {
-  let codegen: Codegen; 
+  let codegen: Codegen;
 
   beforeEach(() => {
     codegen = new Codegen();

@@ -21,4 +21,3 @@ npm run lint
 node dist/server.js
 ```
 By default it listens on http://localhost:3000
-
