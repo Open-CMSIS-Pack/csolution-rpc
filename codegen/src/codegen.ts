@@ -16,10 +16,10 @@ program
   .description("json-rpc interface code generator")
   .version("0.0.9")
   .argument('<schema>', 'openapi.yml schema')
-  .option("-c, --client <string>", "Generate TypeScript client interface", "./rpc-interface.ts")
-  .option("-s, --server <string>", "Generate C++ server interface", "./RpcInterface.h")
+  .option("-c, --client <string>", "Generate TypeScript client interface")
+  .option("-s, --server <string>", "Generate C++ server interface")
   .action((filepath, options) => {
-    console.log(`Generating intefaces for ${filepath}`);
+    console.log(`Generating interfaces for ${filepath}`);
     const codegen = new Codegen();
     const methods = codegen.parseSchema(filepath);
     codegen.collectInfo(methods);
@@ -99,14 +99,18 @@ using namespace jsonrpccxx;\n`;
     program.parse(argv);
   }
 
-  public createClient(options: {client: string}, content: string) {
-    fs.mkdirSync(path.dirname(options.client), { recursive: true });
-    fs.writeFileSync(options.client, content);
+  public createClient(options: {client?: string}, content: string) {
+    if (options.client) {
+      fs.mkdirSync(path.dirname(options.client), { recursive: true });
+      fs.writeFileSync(options.client, content);
+    }
   }
 
-  public createServer(options: {server: string}, content: string) {
-    fs.mkdirSync(path.dirname(options.server), { recursive: true });
-    fs.writeFileSync(options.server, content);
+  public createServer(options: {server?: string}, content: string) {
+    if (options.server) {
+      fs.mkdirSync(path.dirname(options.server), { recursive: true });
+      fs.writeFileSync(options.server, content);
+    }
   }
 
   public parseSchema(filepath: string) : Record<string, Method> {
