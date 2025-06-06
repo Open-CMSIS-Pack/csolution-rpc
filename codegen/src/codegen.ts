@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Arm Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import { Command } from "commander";
 import fs from 'fs';
 import path from "path";

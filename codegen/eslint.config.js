@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Arm Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";

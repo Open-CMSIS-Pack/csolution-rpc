@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2025 Arm Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 export default {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
