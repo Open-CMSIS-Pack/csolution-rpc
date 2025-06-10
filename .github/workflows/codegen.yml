@@ -96,8 +96,12 @@ jobs:
           name: codegen-rpc-interfaces
           path: generated
 
-      - name: Zip generated files
+      - name: ZIP generated files
         run: zip -r csolution-rpc.zip *
+        working-directory: generated
+
+      - name: TAR generated files
+        run: tar -czf csolution-rpc.tar.gz *
         working-directory: generated
 
       - name: Attach files to release assets
@@ -105,7 +109,8 @@ jobs:
         uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd # v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: generated/csolution-rpc.zip
+          file: |
+            generated/csolution-rpc.zip
+            generated/csolution-rpc.tar.gz
           tag: ${{ github.ref }}
           overwrite: true
-          asset_name: csolution-rpc.zip
