@@ -109,8 +109,7 @@ jobs:
         uses: svenstaro/upload-release-action@04733e069f2d7f7f0b4aebc4fbdbce8613b03ccd # v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: |
-            generated/csolution-rpc.zip
-            generated/csolution-rpc.tar.gz
+          file: generated/csolution-rpc.*
           tag: ${{ github.ref }}
           overwrite: true
+          file_glob: true
