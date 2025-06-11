@@ -97,11 +97,11 @@ jobs:
           path: generated
 
       - name: ZIP generated files
-        run: zip -r csolution-rpc.zip *
+        run: zip -r csolution-rpc.zip RpcInterface.h rpc-interface.ts
         working-directory: generated
 
       - name: TAR generated files
-        run: tar -czf csolution-rpc.tar.gz *
+        run: tar -czf csolution-rpc.tar.gz RpcInterface.h rpc-interface.ts
         working-directory: generated
 
       - name: Attach files to release assets
