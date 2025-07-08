@@ -24,14 +24,21 @@ export interface Component extends Common {
     implements?: string,
     maxInstances?: number,
 }
+export interface Options {
+    version?: string,
+    fixedVendor?: boolean,
+    enforced?: boolean,
+}
 export interface CtItem {
     name: string,
+    result?: string,
 }
 export interface ComponentInstance {
     id: string,
     selectedCount: number,
     resolvedComponent?: Component,
     layer?: string,
+    options?: Options,
 }
 export interface CtVariant extends CtItem {
     components: Component[],
@@ -43,6 +50,7 @@ export interface CtAggregate extends CtItem {
     selectedCount?: number,
     variants: CtVariant[],
     layer?: string,
+    options?: Options,
 }
 export interface CtTreeItem extends CtItem {
     cgroups?: CtGroup[],
@@ -91,6 +99,9 @@ export interface LogMessages {
 export interface ApplyParams {
     context: string,
 }
+export interface ResolveParams {
+    context: string,
+}
 export interface LoadSolutionParams {
     solution: string,
 }
@@ -132,6 +143,7 @@ export interface RpcInterface {
   getVersion(): Promise<string>;
   shutdown(): Promise<boolean>;
   apply(args: ApplyParams): Promise<boolean>;
+  resolve(args: ResolveParams): Promise<boolean>;
   loadPacks(): Promise<boolean>;
   loadSolution(args: LoadSolutionParams): Promise<boolean>;
   getPacksInfo(args: GetPacksInfoParams): Promise<PacksInfo>;
@@ -157,6 +169,9 @@ export abstract class RpcMethods implements RpcInterface {
     }
     public async apply(args: ApplyParams): Promise<boolean> {
         return this.get('Apply', args);
+    }
+    public async resolve(args: ResolveParams): Promise<boolean> {
+        return this.get('Resolve', args);
     }
     public async loadPacks(): Promise<boolean> {
         return this.get('LoadPacks');

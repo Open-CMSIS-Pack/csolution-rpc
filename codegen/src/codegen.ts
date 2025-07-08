@@ -171,6 +171,9 @@ using namespace jsonrpccxx;\n`;
   public getType(name: string, item: any, suffix?: string, prefix?: string) : { cpp: string, ts: string } {
     let cppType = '';
     let tsType = '';
+    if(!item) {
+       return { cpp: cppType, ts: tsType };
+    }
     if (item.$ref) {
         const ref = item.$ref.match(/^#\/components\/schemas\/(.*)/);
         tsType = ref ? ref[1] : '';
@@ -264,7 +267,7 @@ using namespace jsonrpccxx;\n`;
       const cppParams: string[] = [];
       const cppRegParams: string[] = [];
       for (const [param, item] of Object.entries(params.properties)) {
-        cppParams.push(`const ${this.getType(name, item).cpp}& ${param}`);
+        cppParams.push(`const ${this.getType(name, item, '', 'RpcArgs::').cpp}& ${param}`);
         cppRegParams.push(`"${param}"`);
       }
       cppFunction += cppParams.join(", ");

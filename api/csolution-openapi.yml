@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: csolution rpc
-  version: 0.0.1
+  version: 0.0.2
   description: Specification of remote procedure call methods for CMSIS csolution integration
   license:
     name: Apache 2.0
@@ -43,6 +43,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/ApplyResponse'}}}
+  /rpc/Resolve:
+    post:
+      summary: Resolve trivial component dependencies
+      description: Resolve trivial component dependencies for the given context
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/ResolveRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/ResolveResponse'}}}
   /rpc/LoadPacks:
     post:
       summary: Load installed and local packs
@@ -120,17 +131,6 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/SelectVariantResponse'}}}
-  /rpc/SelectVersion:
-    post:
-      summary: Select version
-      description: Select version
-      tags: [/rpc]
-      requestBody:
-        content: {application/json: {schema: {$ref: '#/components/schemas/SelectVersionRequest'}}}
-      responses:
-        '200':
-          description: OK
-          content: {application/json: {schema: {$ref: '#/components/schemas/SelectVersionResponse'}}}
   /rpc/SelectBundle:
     post:
       summary: Select bundle
@@ -221,12 +221,27 @@ components:
               description: Maximum of supported component instances
           required:
             - pack
+    Options:
+      type: object
+      properties:
+        version:
+          type: string
+          description: 'Version requirement in SemVer syntax: https://open-cmsis-pack.github.io/cmsis-toolbox/YML-Input-Format/#name-conventions'
+        fixedVendor:
+          type: boolean
+          description: Flag to prefix component ID with vendor when adding component to project or layer
+        enforced:
+          type: boolean
+          description: Flag to enforce exact component vendor, version, condition and originating pack
     CtItem:
       type: object
       properties:
         name:
           type: string
           description: Name of element
+        result:
+          type: string
+          description: 'Condition result: https://github.com/Open-CMSIS-Pack/devtools/blob/tools/projmgr/2.8.0/libs/rtemodel/include/RteItem.h#L78-L95'
       required:
         - name
     ComponentInstance:
@@ -242,7 +257,9 @@ components:
           $ref: '#/components/schemas/Component'
         layer:
           type: string
-          description: Layer
+          description: Absolute path to layer file
+        options:
+          $ref: '#/components/schemas/Options'
       required:
         - id
         - selectedCount
@@ -282,6 +299,8 @@ components:
             layer:
               type: string
               description: Layer
+            options:
+              $ref: '#/components/schemas/Options'
           required:
             - id
             - variants
@@ -470,6 +489,27 @@ components:
         - properties:
             result:
               type: boolean
+    ResolveRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: Resolve
+            params:
+              type: object
+              properties:
+                context:
+                  type: string
+              required:
+                - context
+    ResolveResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              type: boolean
+              description: true if all dependencies are resolved
     LoadPacksRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request'
@@ -483,6 +523,7 @@ components:
         - properties:
             result:
               type: boolean
+              description: installed packs are loaded successfully
     LoadSolutionRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -503,6 +544,7 @@ components:
         - properties:
             result:
               type: boolean
+              description: Solution is loaded successfully
     GetPacksInfoRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -580,8 +622,14 @@ components:
                   type: string
                 id:
                   type: string
+                  description: component aggregate ID
                 count:
                   type: integer
+                  description: number of instances to select, 0 to select unselect
+                options:
+                  $ref: '#/components/schemas/Options'
+                layer:
+                  type: string
               required:
                 - context
                 - id
@@ -592,6 +640,7 @@ components:
         - properties:
             result:
               type: boolean
+              description: true if selection is changed
     SelectVariantRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -606,6 +655,7 @@ components:
                   type: string
                 id:
                   type: string
+                  description: component aggregate ID
                 variant:
                   type: string
               required:
@@ -618,32 +668,7 @@ components:
         - properties:
             result:
               type: boolean
-    SelectVersionRequest:
-      allOf:
-        - $ref: '#/x-jsonrpc-envelope-request-with-params'
-        - properties:
-            method:
-              type: string
-              const: SelectVersion
-            params:
-              type: object
-              properties:
-                context:
-                  type: string
-                id:
-                  type: string
-                version:
-                  type: string
-              required:
-                - context
-                - id
-                - version
-    SelectVersionResponse:
-      allOf:
-        - $ref: '#/x-jsonrpc-envelope-response'
-        - properties:
-            result:
-              type: boolean
+              description: true if selection is changed
     SelectBundleRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -670,6 +695,7 @@ components:
         - properties:
             result:
               type: boolean
+              description: true if selection is changed
     ValidateComponentsRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
