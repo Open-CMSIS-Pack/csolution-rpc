@@ -125,7 +125,7 @@ export interface SelectComponentParams {
     options: Options,
 }
 export interface SuccessResult {
-    success?: boolean,
+    success: boolean,
     message?: string,
 }
 export interface SelectVariantParams {
