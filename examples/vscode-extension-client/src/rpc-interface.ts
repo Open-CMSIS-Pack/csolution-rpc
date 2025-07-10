@@ -25,20 +25,21 @@ export interface Component extends Common {
     maxInstances?: number,
 }
 export interface Options {
-    version?: string,
-    fixedVendor?: boolean,
-    enforced?: boolean,
-}
-export interface CtItem {
-    name: string,
-    result?: string,
+    layer?: string,
+    explicitVersion?: string,
+    explicitVendor?: boolean,
 }
 export interface ComponentInstance {
     id: string,
     selectedCount: number,
-    resolvedComponent?: Component,
-    layer?: string,
+    generator?: string,
+    fixed?: boolean,
     options?: Options,
+    resolvedComponent?: Component,
+}
+export interface CtItem {
+    name: string,
+    result?: string,
 }
 export interface CtVariant extends CtItem {
     components: Component[],
@@ -48,8 +49,9 @@ export interface CtAggregate extends CtItem {
     activeVariant?: string,
     activeVersion?: string,
     selectedCount?: number,
+    generator?: string,
+    fixed?: boolean,
     variants: CtVariant[],
-    layer?: string,
     options?: Options,
 }
 export interface CtTreeItem extends CtItem {
@@ -85,6 +87,7 @@ export interface Result {
     conditions?: Condition[],
 }
 export interface Results {
+    result: string,
     validation?: Result[],
 }
 export interface UsedItems {
@@ -119,16 +122,16 @@ export interface SelectComponentParams {
     context: string,
     id: string,
     count: number,
+    options: Options,
+}
+export interface SuccessResult {
+    success?: boolean,
+    message?: string,
 }
 export interface SelectVariantParams {
     context: string,
     id: string,
     variant: string,
-}
-export interface SelectVersionParams {
-    context: string,
-    id: string,
-    version: string,
 }
 export interface SelectBundleParams {
     context: string,
@@ -142,17 +145,16 @@ export interface ValidateComponentsParams {
 export interface RpcInterface {
   getVersion(): Promise<string>;
   shutdown(): Promise<boolean>;
-  apply(args: ApplyParams): Promise<boolean>;
-  resolve(args: ResolveParams): Promise<boolean>;
-  loadPacks(): Promise<boolean>;
-  loadSolution(args: LoadSolutionParams): Promise<boolean>;
+  apply(args: ApplyParams): Promise<SuccessResult>;
+  resolve(args: ResolveParams): Promise<SuccessResult>;
+  loadPacks(): Promise<SuccessResult>;
+  loadSolution(args: LoadSolutionParams): Promise<SuccessResult>;
   getPacksInfo(args: GetPacksInfoParams): Promise<PacksInfo>;
   getUsedItems(args: GetUsedItemsParams): Promise<UsedItems>;
   getComponentsTree(args: GetComponentsTreeParams): Promise<CtRoot>;
-  selectComponent(args: SelectComponentParams): Promise<boolean>;
-  selectVariant(args: SelectVariantParams): Promise<boolean>;
-  selectVersion(args: SelectVersionParams): Promise<boolean>;
-  selectBundle(args: SelectBundleParams): Promise<boolean>;
+  selectComponent(args: SelectComponentParams): Promise<SuccessResult>;
+  selectVariant(args: SelectVariantParams): Promise<SuccessResult>;
+  selectBundle(args: SelectBundleParams): Promise<SuccessResult>;
   validateComponents(args: ValidateComponentsParams): Promise<Results>;
   getLogMessages(): Promise<LogMessages>;
 }
@@ -167,16 +169,16 @@ export abstract class RpcMethods implements RpcInterface {
     public async shutdown(): Promise<boolean> {
         return this.get('Shutdown');
     }
-    public async apply(args: ApplyParams): Promise<boolean> {
+    public async apply(args: ApplyParams): Promise<SuccessResult> {
         return this.get('Apply', args);
     }
-    public async resolve(args: ResolveParams): Promise<boolean> {
+    public async resolve(args: ResolveParams): Promise<SuccessResult> {
         return this.get('Resolve', args);
     }
-    public async loadPacks(): Promise<boolean> {
+    public async loadPacks(): Promise<SuccessResult> {
         return this.get('LoadPacks');
     }
-    public async loadSolution(args: LoadSolutionParams): Promise<boolean> {
+    public async loadSolution(args: LoadSolutionParams): Promise<SuccessResult> {
         return this.get('LoadSolution', args);
     }
     public async getPacksInfo(args: GetPacksInfoParams): Promise<PacksInfo> {
@@ -188,16 +190,13 @@ export abstract class RpcMethods implements RpcInterface {
     public async getComponentsTree(args: GetComponentsTreeParams): Promise<CtRoot> {
         return this.get('GetComponentsTree', args);
     }
-    public async selectComponent(args: SelectComponentParams): Promise<boolean> {
+    public async selectComponent(args: SelectComponentParams): Promise<SuccessResult> {
         return this.get('SelectComponent', args);
     }
-    public async selectVariant(args: SelectVariantParams): Promise<boolean> {
+    public async selectVariant(args: SelectVariantParams): Promise<SuccessResult> {
         return this.get('SelectVariant', args);
     }
-    public async selectVersion(args: SelectVersionParams): Promise<boolean> {
-        return this.get('SelectVersion', args);
-    }
-    public async selectBundle(args: SelectBundleParams): Promise<boolean> {
+    public async selectBundle(args: SelectBundleParams): Promise<SuccessResult> {
         return this.get('SelectBundle', args);
     }
     public async validateComponents(args: ValidateComponentsParams): Promise<Results> {
