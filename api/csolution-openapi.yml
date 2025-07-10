@@ -422,6 +422,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Result'
+      required:
+        - result
     UsedItems:
       type: object
       properties:
