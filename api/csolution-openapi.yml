@@ -651,7 +651,7 @@ components:
           type: string
           description: optional error/warning/info message
       required:
-        - modified
+        - success
     SelectComponentResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
