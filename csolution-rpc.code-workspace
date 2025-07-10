@@ -13,5 +13,7 @@
 			"path": "examples/vscode-extension-client"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"terminal.integrated.defaultProfile.windows": "Command Prompt"
+	}
 }
