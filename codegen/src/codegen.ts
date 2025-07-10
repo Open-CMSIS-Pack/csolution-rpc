@@ -94,6 +94,15 @@ using namespace jsonrpccxx;\n`;
       j[key] = opt.value();
     }
   }\n`;
+  readonly cppFromJsonTemplates =
+`  template<class T> void from_json(const nlohmann::json& j, const string& key, T& value) {
+    j.at(key).get_to(value);
+  }
+  template<class T> void from_json(const nlohmann::json& j, const string& key, optional<T>& opt) {
+    if (j.contains(key) && !j[key].is_null()) {
+      opt = j[key].get<T>();
+    }
+  }\n`;
 
   public run(argv: string[]) {
     program.parse(argv);
@@ -317,24 +326,24 @@ using namespace jsonrpccxx;\n`;
     return content;
   }
 
-  public genToJson(members: Member[]) : string {
+  public genJsonTypeMap(jsonFunction: string, members: Member[]) : string {
     let content = '';
     for (const element of members) {
-      const cppToJson = `to_json(j, "${element.name}", s.${this.kebabToCamel(element.name)});`;
-      content += `    ${cppToJson}\n`;
+      const cppJsonTypeMap = `${jsonFunction}(j, "${element.name}", s.${this.kebabToCamel(element.name)});`;
+      content += `    ${cppJsonTypeMap}\n`;
     }
     return content;
   }
 
-  public genParentToJson(struct: Struct) : string {
+  public genParentJsonTypeMap(jsonFunction: string, struct: Struct) : string {
     let content = '';
     if (struct.extends) {
       for (const parent of struct.extends) {
         if (parent in this.structs) {
           const parentStruct = this.structs[parent];
-          content += this.genParentToJson(parentStruct);
+          content += this.genParentJsonTypeMap(jsonFunction, parentStruct);
           if (parentStruct.members) {
-            content += this.genToJson(parentStruct.members);
+            content += this.genJsonTypeMap(jsonFunction, parentStruct.members);
           }
         }
       }
@@ -390,10 +399,20 @@ using namespace jsonrpccxx;\n`;
       const struct = this.structs[name];
       if (struct.members) {
         content += `  inline void to_json(nlohmann::json& j, const ${name}& s) {\n`;
-        content += this.genParentToJson(struct);
-        if (struct.members) {
-          content += this.genToJson(struct.members);
-        }
+        content += this.genParentJsonTypeMap('to_json', struct);
+        content += this.genJsonTypeMap('to_json', struct.members);
+        content += `  }\n`;
+      }
+    }
+
+    // cpp from json
+    content += `\n${this.cppFromJsonTemplates}`;
+    for (const name in this.structs) {
+      const struct = this.structs[name];
+      if (struct.members) {
+        content += `  inline void from_json(const nlohmann::json& j, ${name}& s) {\n`;
+        content += this.genParentJsonTypeMap('from_json', struct);
+        content += this.genJsonTypeMap('from_json', struct.members);
         content += `  }\n`;
       }
     }
