@@ -224,15 +224,37 @@ components:
     Options:
       type: object
       properties:
-        version:
+        layer:
           type: string
-          description: 'Version requirement in SemVer syntax: https://open-cmsis-pack.github.io/cmsis-toolbox/YML-Input-Format/#name-conventions'
-        fixedVendor:
+          description: Absolute path to .clayer.yml file
+        explicitVersion:
+          type: string
+          description: 'Version requirement in SemVer syntax: https://open-cmsis-pack.github.io/cmsis-toolbox/YML-Input-Format/#name-conventions empty '
+        explicitVendor:
           type: boolean
-          description: Flag to prefix component ID with vendor when adding component to project or layer
-        enforced:
+          description: Flag to prefix component ID with vendor when adding component to project or layer, false
+    ComponentInstance:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+        selectedCount:
+          type: integer
+          description: Number of selected instances
+        generator:
+          type: string
+          description: Associated generator name
+        fixed:
           type: boolean
-          description: Flag to enforce exact component vendor, version, condition and originating pack
+          description: Component cannot be unselected
+        options:
+          $ref: '#/components/schemas/Options'
+        resolvedComponent:
+          $ref: '#/components/schemas/Component'
+      required:
+        - id
+        - selectedCount
     CtItem:
       type: object
       properties:
@@ -244,25 +266,6 @@ components:
           description: 'Condition result: https://github.com/Open-CMSIS-Pack/devtools/blob/tools/projmgr/2.8.0/libs/rtemodel/include/RteItem.h#L78-L95'
       required:
         - name
-    ComponentInstance:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier
-        selectedCount:
-          type: integer
-          description: Number of selected instances
-        resolvedComponent:
-          $ref: '#/components/schemas/Component'
-        layer:
-          type: string
-          description: Absolute path to layer file
-        options:
-          $ref: '#/components/schemas/Options'
-      required:
-        - id
-        - selectedCount
     CtVariant:
       allOf:
         - $ref: '#/components/schemas/CtItem'
@@ -292,13 +295,16 @@ components:
             selectedCount:
               type: integer
               description: Number of selected instances
+            generator:
+              type: string
+              description: Associated generator name
+            fixed:
+              type: boolean
+              description: Component cannot be unselected
             variants:
               type: array
               items:
                 $ref: '#/components/schemas/CtVariant'
-            layer:
-              type: string
-              description: Layer
             options:
               $ref: '#/components/schemas/Options'
           required:
@@ -409,6 +415,9 @@ components:
     Results:
       type: object
       properties:
+        result:
+          type: string
+          description: 'Condition result: https://github.com/Open-CMSIS-Pack/devtools/blob/tools/projmgr/2.8.0/libs/rtemodel/include/RteItem.h#L78-L95'
         validation:
           type: array
           items:
@@ -488,7 +497,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
+              $ref: '#/components/schemas/SuccessResult'
     ResolveRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -508,8 +517,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
-              description: true if all dependencies are resolved
+              $ref: '#/components/schemas/SuccessResult'
     LoadPacksRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request'
@@ -522,8 +530,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
-              description: installed packs are loaded successfully
+              $ref: '#/components/schemas/SuccessResult'
     LoadSolutionRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -543,8 +550,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
-              description: Solution is loaded successfully
+              $ref: '#/components/schemas/SuccessResult'
     GetPacksInfoRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -628,19 +634,28 @@ components:
                   description: number of instances to select, 0 to select unselect
                 options:
                   $ref: '#/components/schemas/Options'
-                layer:
-                  type: string
               required:
                 - context
                 - id
                 - count
+                - options
+    SuccessResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: true if requested operation has been performed successfully or selection has been modified
+        message:
+          type: string
+          description: optional error/warning/info message
+      required:
+        - modified
     SelectComponentResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
-              description: true if selection is changed
+              $ref: '#/components/schemas/SuccessResult'
     SelectVariantRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -667,8 +682,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
-              description: true if selection is changed
+               $ref: '#/components/schemas/SuccessResult'
     SelectBundleRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -694,8 +708,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
-              description: true if selection is changed
+              $ref: '#/components/schemas/SuccessResult'
     ValidateComponentsRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
