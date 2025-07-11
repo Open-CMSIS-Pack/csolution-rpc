@@ -6,6 +6,10 @@
  * json-rpc-codegen generated file: DO NOT EDIT!
  */
 
+export interface SuccessResult {
+    success: boolean,
+    message?: string,
+}
 export interface Common {
     id: string,
     description?: string,
@@ -16,7 +20,7 @@ export interface Pack extends Common {
     used?: boolean,
     references?: string[],
 }
-export interface PacksInfo {
+export interface PacksInfo extends SuccessResult {
     packs: Pack[],
 }
 export interface Component extends Common {
@@ -73,7 +77,7 @@ export interface CtClass extends CtItem {
     activeBundle?: string,
     bundles: CtBundle[],
 }
-export interface CtRoot {
+export interface CtRoot extends SuccessResult {
     classes: CtClass[],
 }
 export interface Condition {
@@ -86,18 +90,21 @@ export interface Result {
     aggregates?: string[],
     conditions?: Condition[],
 }
-export interface Results {
+export interface Results extends SuccessResult {
     result: string,
     validation?: Result[],
 }
-export interface UsedItems {
+export interface UsedItems extends SuccessResult {
     components: ComponentInstance[],
     packs: Pack[],
 }
-export interface LogMessages {
+export interface LogMessages extends SuccessResult {
     info?: string[],
     errors?: string[],
     warnings?: string[],
+}
+export interface GetVersionResult extends SuccessResult {
+    version?: string,
 }
 export interface ApplyParams {
     context: string,
@@ -124,10 +131,6 @@ export interface SelectComponentParams {
     count: number,
     options: Options,
 }
-export interface SuccessResult {
-    success: boolean,
-    message?: string,
-}
 export interface SelectVariantParams {
     context: string,
     id: string,
@@ -143,8 +146,8 @@ export interface ValidateComponentsParams {
 }
 
 export interface RpcInterface {
-  getVersion(): Promise<string>;
-  shutdown(): Promise<boolean>;
+  getVersion(): Promise<GetVersionResult>;
+  shutdown(): Promise<SuccessResult>;
   apply(args: ApplyParams): Promise<SuccessResult>;
   resolve(args: ResolveParams): Promise<SuccessResult>;
   loadPacks(): Promise<SuccessResult>;
@@ -163,10 +166,10 @@ export abstract class RpcMethods implements RpcInterface {
 
     abstract get<TArgs, TResponse>(remoteMethod: string, args?: TArgs): Promise<TResponse>;
 
-    public async getVersion(): Promise<string> {
+    public async getVersion(): Promise<GetVersionResult> {
         return this.get('GetVersion');
     }
-    public async shutdown(): Promise<boolean> {
+    public async shutdown(): Promise<SuccessResult> {
         return this.get('Shutdown');
     }
     public async apply(args: ApplyParams): Promise<SuccessResult> {

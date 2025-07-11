@@ -167,6 +167,17 @@ paths:
 
 components:
   schemas:
+    SuccessResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: true if requested operation has been performed successfully or selection has been modified
+        message:
+          type: string
+          description: optional error/warning/info message
+      required:
+        - success
     Common:
       type: object
       properties:
@@ -197,15 +208,16 @@ components:
               items:
                 type: string
     PacksInfo:
-      type: object
-      properties:
-        packs:
-          type: array
-          description: List of packs information
-          items:
-            $ref: '#/components/schemas/Pack'
-      required:
-        - packs
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            packs:
+              type: array
+              description: List of packs information
+              items:
+                $ref: '#/components/schemas/Pack'
+          required:
+            - packs
     Component:
       allOf:
         - $ref: '#/components/schemas/Common'
@@ -367,16 +379,16 @@ components:
           required:
             - bundles
     CtRoot:
-      type: object
-      description: Root of Component Tree
-      properties:
-        classes:
-          type: array
-          description: Array of Component Classes
-          items:
-            $ref: '#/components/schemas/CtClass'
-      required:
-        - classes
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            classes:
+              type: array
+              description: Array of Component Classes
+              items:
+                $ref: '#/components/schemas/CtClass'
+          required:
+            - classes
     Condition:
       type: object
       properties:
@@ -413,46 +425,50 @@ components:
         - id
         - result
     Results:
-      type: object
-      properties:
-        result:
-          type: string
-          description: 'Condition result: https://github.com/Open-CMSIS-Pack/devtools/blob/tools/projmgr/2.8.0/libs/rtemodel/include/RteItem.h#L78-L95'
-        validation:
-          type: array
-          items:
-            $ref: '#/components/schemas/Result'
-      required:
-        - result
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            result:
+              type: string
+              description: 'Condition result: https://github.com/Open-CMSIS-Pack/devtools/blob/tools/projmgr/2.8.0/libs/rtemodel/include/RteItem.h#L78-L95'
+            validation:
+              type: array
+              items:
+                $ref: '#/components/schemas/Result'
+          required:
+            - result
     UsedItems:
-      type: object
-      properties:
-        components:
-          type: array
-          items:
-            $ref: '#/components/schemas/ComponentInstance'
-        packs:
-          type: array
-          items:
-            $ref: '#/components/schemas/Pack'
-      required:
-        - components
-        - packs
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            components:
+              type: array
+              items:
+                $ref: '#/components/schemas/ComponentInstance'
+            packs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pack'
+          required:
+            - components
+            - packs
+
     LogMessages:
-      type: object
-      properties:
-        info:
-          type: array
-          items:
-            type: string
-        errors:
-          type: array
-          items:
-            type: string
-        warnings:
-          type: array
-          items:
-            type: string
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            info:
+              type: array
+              items:
+                type: string
+            errors:
+              type: array
+              items:
+                type: string
+            warnings:
+              type: array
+              items:
+                type: string
 
     GetVersionRequest:
       allOf:
@@ -461,12 +477,20 @@ components:
             method:
               type: string
               const: GetVersion
+
+    GetVersionResult:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            version:
+              type: string
+              description: Tool version
     GetVersionResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: string
+              $ref: '#/components/schemas/GetVersionResult'
     ShutdownRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request'
@@ -479,7 +503,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              type: boolean
+              $ref: '#/components/schemas/SuccessResult'
     ApplyRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -641,17 +665,6 @@ components:
                 - id
                 - count
                 - options
-    SuccessResult:
-      type: object
-      properties:
-        success:
-          type: boolean
-          description: true if requested operation has been performed successfully or selection has been modified
-        message:
-          type: string
-          description: optional error/warning/info message
-      required:
-        - success
     SelectComponentResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
