@@ -98,6 +98,28 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/GetPacksInfoResponse'}}}
+  /rpc/GetDeviceList:
+    post:
+      summary: Get device list
+      description: Get list of filtered devices
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceListRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceListResponse'}}}
+  /rpc/GetDeviceData:
+    post:
+      summary: Get device data for specified device
+      description: Get device data for specified device
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceDataRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceDataResponse'}}}
   /rpc/GetComponentsTree:
     post:
       summary: Get components tree
@@ -218,6 +240,90 @@ components:
                 $ref: '#/components/schemas/Pack'
           required:
             - packs
+    Processor:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Processor name withing device, optional
+        core:
+          type: string
+          description: Processor core type
+        trustzone:
+          type: boolean
+          description: Processor trustzone
+      required:
+        - core
+    Memory:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Memory name/ID
+        size:
+          type: string
+          description: Memory size
+        access:
+          type: string
+          description: Memory access permissions
+      required:
+        - core
+    DeviceId:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Device name
+        vendor:
+          type: string
+          description: Device vendor, official name should be used, optional
+      required:
+        - name
+    Device:
+      allOf:
+        - $ref: '#/components/schemas/DeviceId'
+        - properties:
+            family:
+              type: string
+              description: Device family
+            subFamily:
+              type: string
+              description: Device subfamily, optional
+            pack:
+              type: string
+              description: Originating pack ID
+            description:
+              type: string
+              description: Short device description
+            processors:
+              type: array
+              items:
+                $ref: '#/components/schemas/Processor'
+            memories:
+              type: array
+              items:
+                $ref: '#/components/schemas/Memory'
+          required:
+            - name
+    DevicesInfo:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            devices:
+              type: array
+              description: List of devices
+              items:
+                $ref: '#/components/schemas/Device'
+          required:
+            - devices
+    DeviceData:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            device:
+              $ref: '#/components/schemas/Device'
+          required:
+            - device
     Component:
       allOf:
         - $ref: '#/components/schemas/Common'
@@ -452,7 +558,6 @@ components:
           required:
             - components
             - packs
-
     LogMessages:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
@@ -477,7 +582,6 @@ components:
             method:
               type: string
               const: GetVersion
-
     GetVersionResult:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
@@ -617,6 +721,55 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/UsedItems'
+    GetDeviceListRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: GetDeviceList
+            params:
+              type: object
+              properties:
+                context:
+                  type: string
+                  description: Optional context to limit the list to packs used in the context
+                namePattern:
+                  type: string
+                  description: Optional device name pattern containing wildcards
+                vendor:
+                  type: string
+                  description: Optional vendor name to limit device list to the requested vendor
+    GetDeviceListResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/DevicesInfo'
+    GetDeviceDataRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: GetDeviceData
+            params:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Device name to query data
+                vendor:
+                  type: string
+                  description: Device vendor, optional
+              required:
+                - name
+    GetDeviceDataResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/DeviceData'
     GetComponentsTreeRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
