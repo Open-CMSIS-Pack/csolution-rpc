@@ -77,6 +77,7 @@ export class Codegen {
 `#ifndef RPCINTERFACE_H
 #define RPCINTERFACE_H\n
 #include <jsonrpccxx/server.hpp>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>\n
@@ -215,6 +216,10 @@ using namespace jsonrpccxx;\n`;
             if (item.properties) {
               tsType = this.getTypeName(name, suffix);
               cppType = `${prefix ?? ''}${tsType}`;
+            } else if (item.additionalProperties) {
+              const {cpp, ts} = this.getType(name, item.additionalProperties, suffix);
+              tsType = `Record<string, ${ts}>`;
+              cppType = `map<string, ${cpp}>`;
             } else {
               console.error('unknown type:', item.type);
             }
