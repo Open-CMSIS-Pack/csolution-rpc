@@ -305,7 +305,7 @@ components:
                 $ref: '#/components/schemas/Memory'
           required:
             - name
-    DevicesInfo:
+    DeviceList:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
         - properties:
@@ -745,7 +745,7 @@ components:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              $ref: '#/components/schemas/DevicesInfo'
+              $ref: '#/components/schemas/DeviceList'
     GetDeviceDataRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
