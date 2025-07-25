@@ -164,6 +164,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/GetLogMessagesResponse'}}}
+  /rpc/GetApplications:
+    post:
+      summary: Get applications
+      description: Get reference applications, examples and solution templates
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/GetApplicationsRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/GetApplicationsResponse'}}}
 
 components:
   schemas:
@@ -470,6 +481,125 @@ components:
               items:
                 type: string
 
+    ApplicationsFilter:
+      type: object
+      properties:
+        board:
+          type: string
+          description: Board Identifier
+        device:
+          type: string
+          description: Device Identifier
+        environment:
+          type: string
+          description: Name of the environment
+    Environment:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the environment
+        file:
+          type: string
+          description: Project file to be loaded
+        folder:
+          type: string
+          description: Folder containing all example files
+      required:
+        - name
+        - file
+        - folder
+    Example:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the example
+        description:
+          type: string
+          description: Brief description
+        doc:
+          type: string
+          description: Document that describes the example
+        version:
+          type: string
+          description: Example version number
+        archive:
+          type: string
+          description: Archive file containing all files and sub-folders
+        pack:
+          type: string
+          description: Pack identifier
+        environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Environment'
+          description: List of environments
+        components:
+          type: array
+          items:
+            type: string
+          description: List of related components
+        categories:
+          type: array
+          items:
+            type: string
+          description: List of categories
+        keywords:
+          type: array
+          items:
+            type: string
+          description: List of keywords
+      required:
+        - name
+        - description
+        - doc
+        - environments
+        - pack
+    SolutionTemplate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the template
+        description:
+          type: string
+          description: Brief description
+        file:
+          type: string
+          description: Name of the *.csolution.yml file
+        folder:
+          type: string
+          description: Folder containing the template
+        copyTo:
+          type: string
+          description: Path to copy the template into the csolution project
+        pack:
+          type: string
+          description: Pack identifier
+      required:
+        - name
+        - description
+        - file
+        - folder
+        - pack
+    ApplicationsInfo:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            examples:
+              type: array
+              items:
+                $ref: '#/components/schemas/Example'
+            refApps:
+              type: array
+              items:
+                $ref: '#/components/schemas/Example'
+            templates:
+              type: array
+              items:
+                $ref: '#/components/schemas/SolutionTemplate'
+
     GetVersionRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request'
@@ -757,6 +887,27 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/LogMessages'
+
+    GetApplicationsRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: GetApplications
+            params:
+             type: object
+             properties:
+              filter:
+                $ref: '#/components/schemas/ApplicationsFilter'
+             required:
+               - filter  
+    GetApplicationsResponse:
+       allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/ApplicationsInfo'
 
 x-jsonrpc-envelope-request:
   allOf:
