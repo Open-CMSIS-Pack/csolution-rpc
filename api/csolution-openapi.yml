@@ -109,17 +109,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceListResponse'}}}
-  /rpc/GetDeviceData:
+  /rpc/GetDeviceInfo:
     post:
       summary: Get device data for specified device
       description: Get device data for specified device
       tags: [/rpc]
       requestBody:
-        content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceDataRequest'}}}
+        content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceInfoRequest'}}}
       responses:
         '200':
           description: OK
-          content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceDataResponse'}}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceInfoResponse'}}}
   /rpc/GetComponentsTree:
     post:
       summary: Get components tree
@@ -249,9 +249,10 @@ components:
         core:
           type: string
           description: Processor core type
-        trustzone:
-          type: boolean
-          description: Processor trustzone
+        attributes:
+          type: object
+          additionalProperties:
+            type: string
       required:
         - core
     Memory:
@@ -268,43 +269,34 @@ components:
           description: Memory access permissions
       required:
         - core
-    DeviceId:
+    Device:
       type: object
       properties:
-        name:
-          type: string
-          description: Device name
-        vendor:
-          type: string
-          description: Device vendor, official name should be used, optional
+         id:
+           type: string
+           description: Device id in the format Vendor::Name, official vendor name should be used
+         family:
+           type: string
+           description: Device family
+         subFamily:
+           type: string
+           description: Device subfamily, optional
+         pack:
+            type: string
+            description: Originating pack ID
+         description:
+            type: string
+            description: Short device description
+         processors:
+            type: array
+            items:
+              $ref: '#/components/schemas/Processor'
+         memories:
+            type: array
+            items:
+              $ref: '#/components/schemas/Memory'
       required:
-        - name
-    Device:
-      allOf:
-        - $ref: '#/components/schemas/DeviceId'
-        - properties:
-            family:
-              type: string
-              description: Device family
-            subFamily:
-              type: string
-              description: Device subfamily, optional
-            pack:
-              type: string
-              description: Originating pack ID
-            description:
-              type: string
-              description: Short device description
-            processors:
-              type: array
-              items:
-                $ref: '#/components/schemas/Processor'
-            memories:
-              type: array
-              items:
-                $ref: '#/components/schemas/Memory'
-          required:
-            - name
+            - id
     DeviceList:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
@@ -316,7 +308,7 @@ components:
                 $ref: '#/components/schemas/Device'
           required:
             - devices
-    DeviceData:
+    DeviceInfo:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
         - properties:
@@ -746,30 +738,27 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/DeviceList'
-    GetDeviceDataRequest:
+    GetDeviceInfoRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
         - properties:
             method:
               type: string
-              const: GetDeviceData
+              const: GetDeviceInfo
             params:
               type: object
               properties:
-                name:
+                id:
                   type: string
-                  description: Device name to query data
-                vendor:
-                  type: string
-                  description: Device vendor, optional
+                  description: Device ID in the format Vendor::Name, vendor prefix is optional
               required:
-                - name
-    GetDeviceDataResponse:
+                - id
+    GetDeviceInfoResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
-              $ref: '#/components/schemas/DeviceData'
+              $ref: '#/components/schemas/DeviceInfo'
     GetComponentsTreeRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
