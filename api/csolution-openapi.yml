@@ -122,8 +122,8 @@ paths:
           content: {application/json: {schema: {$ref: '#/components/schemas/GetDeviceInfoResponse'}}}
   /rpc/GetBoardList:
     post:
-      summary: Get device list
-      description: Get list of filtered devices
+      summary: Get board list
+      description: Get list of filtered boards
       tags: [/rpc]
       requestBody:
         content: {application/json: {schema: {$ref: '#/components/schemas/GetBoardListRequest'}}}
@@ -133,8 +133,8 @@ paths:
           content: {application/json: {schema: {$ref: '#/components/schemas/GetBoardListResponse'}}}
   /rpc/GetBoardInfo:
     post:
-      summary: Get device data for specified device
-      description: Get device data for specified device
+      summary: Get data for specified board
+      description: Get data for specified board
       tags: [/rpc]
       requestBody:
         content: {application/json: {schema: {$ref: '#/components/schemas/GetBoardInfoRequest'}}}
@@ -285,7 +285,7 @@ components:
       properties:
         name:
           type: string
-          description: Processor name withing device, optional
+          description: Processor name within device, optional
         core:
           type: string
           description: Processor core type
@@ -355,7 +355,7 @@ components:
               description: Link to file or URL with board image
             devices:
               type: array
-              description: List of mounded and compatible devices
+              description: List of mounted and compatible devices
               items:
                 $ref: '#/components/schemas/Device'
             memories:
