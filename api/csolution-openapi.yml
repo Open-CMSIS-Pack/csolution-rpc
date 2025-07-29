@@ -867,7 +867,7 @@ components:
               properties:
                 id:
                   type: string
-                  description: Board  ID in the format Vendor::Name@Revision, vendor prefix and revision suffix are optional
+                  description: Board  ID in the format Vendor::Name:Revision, vendor prefix is optional.
               required:
                 - id
     GetBoardInfoResponse:
