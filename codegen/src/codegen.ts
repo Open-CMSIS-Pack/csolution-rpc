@@ -14,7 +14,6 @@ const program = new Command();
 program
   .name("codegen")
   .description("json-rpc interface code generator")
-  .version("0.0.9")
   .argument('<schema>', 'openapi.yml schema')
   .option("-c, --client <string>", "Generate TypeScript client interface")
   .option("-s, --server <string>", "Generate C++ server interface")
@@ -63,6 +62,7 @@ export class Codegen {
 
   public structs: Record<string, Struct> = {};
   public functions: Record<string, Function> = {};
+  public rpcVersion: string = '0.0.0';
 
   readonly header =
 `/*
@@ -131,6 +131,8 @@ using namespace jsonrpccxx;\n`;
       console.error("error reading file:", e);
       return {};
     }
+
+    this.rpcVersion = doc?.info?.version ?? '0.0.0';
 
     const methods: Record<string, Method> = {};
 
@@ -427,7 +429,9 @@ using namespace jsonrpccxx;\n`;
   }
 
   public genCpp() {
-    const content = `${this.header}\n${this.cppHeader}\n${this.genCppNamespace()}\n${this.genCppClass()}\n${this.cppFooter}\n`;
+    const content = `${this.header}\n${this.cppHeader}
+static constexpr const char* RPC_API_VERSION = "${this.rpcVersion}";\n
+${this.genCppNamespace()}\n${this.genCppClass()}\n${this.cppFooter}\n`;
     return content;
   }
 
@@ -477,7 +481,9 @@ using namespace jsonrpccxx;\n`;
   }
 
   public genTs() {
-    const content = `${this.header}\n${this.genTsTypeInterfaces()}\n${this.genTsInterface()}\n${this.genTsClass()}`;
+    const content = `${this.header}
+export const RPC_API_VERSION = '${this.rpcVersion}' as const;\n
+${this.genTsTypeInterfaces()}\n${this.genTsInterface()}\n${this.genTsClass()}`;
     return content;
   }
 }

@@ -96,6 +96,17 @@ jobs:
           name: codegen-rpc-interfaces
           path: generated
 
+      - name: Check release version tag
+        run: |
+          version=$(grep -oP 'RPC_API_VERSION\s*=\s*"\K[^"]+' RpcInterface.h)
+          tag=${{ github.event.release.tag_name }}
+          tag="${tag#v}"
+          if [ "$tag" != "$version" ]; then
+            echo "Release version does not match the version in generated interfaces. Update csolution-openapi.yml"
+            exit 1
+          fi
+        working-directory: generated
+
       - name: ZIP generated files
         run: zip -r csolution-rpc.zip RpcInterface.h rpc-interface.ts
         working-directory: generated
