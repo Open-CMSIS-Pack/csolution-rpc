@@ -871,8 +871,13 @@ components:
               properties:
                 solution:
                   type: string
+                  description: Path to <solution>.csolution.yml
+                activeTarget:
+                  type: string
+                  description: Active target set in the format <target-type>[@<set>]
               required:
                 - solution
+                - activeTarget
     LoadSolutionResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
