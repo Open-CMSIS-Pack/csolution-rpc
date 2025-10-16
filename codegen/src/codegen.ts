@@ -203,9 +203,12 @@ using namespace jsonrpccxx;\n`;
             cppType = 'bool';
             break;
           case 'integer':
-          case 'number':
             tsType = 'number';
             cppType = 'int';
+            break;
+          case 'number':
+            tsType = 'number';
+            cppType = 'unsigned long long';
             break;
           case 'string':
             tsType = 'string';

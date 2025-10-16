@@ -313,6 +313,22 @@ components:
           description: Connector type
       required:
         - adapter
+    Debugger:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of on-board debugger
+        protocol:
+          type: string
+          description: Debug protocol (jtag or swd)
+        clock:
+          type: number
+          description: Debug clock speed (in Hz)
+      required:
+        - name
+        - protocol
+        - clock
     Processor:
       type: object
       properties:
@@ -400,6 +416,8 @@ components:
               description: List of supported debug interfaces
               items:
                 $ref: '#/components/schemas/DebugInterface'
+            debugger:
+              $ref: '#/components/schemas/Debugger'
 
     BoardList:
       allOf:
