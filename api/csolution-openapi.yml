@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: csolution rpc
-  version: 0.0.4
+  version: 0.0.5
   description: Specification of remote procedure call methods for CMSIS csolution integration
   license:
     name: Apache 2.0
@@ -230,6 +230,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/ConvertSolutionResponse'}}}
+  /rpc/DiscoverLayers:
+    post:
+      summary: DiscoverLayers
+      description: List compatible layers for the undefined variables in the loaded solution
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/DiscoverLayersRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/DiscoverLayersResponse'}}}
 
 components:
   schemas:
@@ -780,6 +791,59 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/SolutionTemplate'
+    LayerVariable:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Unique variable name for the layer
+        clayer:
+          type: string
+          description: Resolved *.clayer.yml file path
+        description:
+          type: string
+          description: Brief description text (from *.clayer.yml)
+        settings:
+          type: array
+          description: List of connection sets
+          items:
+            type: object
+            properties:
+              set:
+                type: string
+            required:
+              - set
+        path:
+          type: string
+          description: Path to the directory that contains the layer (from *.PDSC file)
+        file:
+          type: string
+          description: Name of the *.clayer.yml file relative to the directory specified with path (from *.PDSC file)
+        copy-to:
+          type: string
+          description: Proposed directory for the layer in the csolution project (from *.PDSC file)
+      required:
+        - name
+        - clayer
+    VariablesConfiguration:
+      type: object
+      properties:
+        variables:
+          type: array
+          description: Resolved layer variables for each configuration
+          items:
+            $ref: '#/components/schemas/LayerVariable'
+      required:
+        - variables
+    DiscoverLayersInfo:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            configurations:
+              type: array
+              description: Possible configurations for the reference application
+              items:
+                $ref: '#/components/schemas/VariablesConfiguration'
 
     GetVersionRequest:
       allOf:
@@ -1231,6 +1295,31 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/ConvertSolutionResult'
+    DiscoverLayersRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request'
+        - properties:
+            method:
+              type: string
+              const: DiscoverLayers
+            params:
+              type: object
+              properties:
+                solution:
+                  type: string
+                  description: Path to <solution>.csolution.yml
+                activeTarget:
+                  type: string
+                  description: Active target set in the format <target-type>[@<set>]
+              required:
+                - solution
+                - activeTarget
+    DiscoverLayersResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/DiscoverLayersInfo'
 
 x-jsonrpc-envelope-request:
   allOf:
