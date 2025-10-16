@@ -241,6 +241,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/DiscoverLayersResponse'}}}
+  /rpc/ListMissingPacks:
+    post:
+      summary: ListMissingPacks
+      description: List missing (not installed) packs required by the active target-set 
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/ListMissingPacksRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/ListMissingPacksResponse'}}}
 
 components:
   schemas:
@@ -1338,6 +1349,40 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/DiscoverLayersInfo'
+    ListMissingPacksRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: ListMissingPacks
+            params:
+              type: object
+              properties:
+                solution:
+                  type: string
+                  description: Path to <solution>.csolution.yml
+                activeTarget:
+                  type: string
+                  description: Active target set in the format <target-type>[@<set>]
+              required:
+                - solution
+                - activeTarget
+    ListMissingPacksResult:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            packs:
+              type: array
+              description: Missing pack identifiers
+              items:
+                type: string
+    ListMissingPacksResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/ListMissingPacksResult'
 
 x-jsonrpc-envelope-request:
   allOf:
