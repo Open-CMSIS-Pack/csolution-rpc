@@ -963,6 +963,18 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/SuccessResult'
+    LoadSolutionParams:
+      type: object
+      properties:
+        solution:
+          type: string
+          description: Path to <solution>.csolution.yml
+        activeTarget:
+          type: string
+          description: Active target set in the format <target-type>[@<set>]
+      required:
+        - solution
+        - activeTarget
     LoadSolutionRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -971,17 +983,7 @@ components:
               type: string
               const: LoadSolution
             params:
-              type: object
-              properties:
-                solution:
-                  type: string
-                  description: Path to <solution>.csolution.yml
-                activeTarget:
-                  type: string
-                  description: Active target set in the format <target-type>[@<set>]
-              required:
-                - solution
-                - activeTarget
+              $ref: '#/components/schemas/LoadSolutionParams'
     LoadSolutionResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
@@ -1281,6 +1283,15 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/DraftProjectsInfo'
+    ConvertSolutionParams:
+      allOf:
+        - $ref: '#/components/schemas/LoadSolutionParams'
+        - properties:
+            updateRte:
+              type: boolean
+              description: Create/update configuration files
+          required:
+            - updateRte
     ConvertSolutionRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -1289,21 +1300,7 @@ components:
               type: string
               const: ConvertSolution
             params:
-              type: object
-              properties:
-                solution:
-                  type: string
-                  description: Path to <solution>.csolution.yml
-                activeTarget:
-                  type: string
-                  description: Active target set in the format <target-type>[@<set>]
-                updateRte:
-                  type: boolean
-                  description: Create/update configuration files
-              required:
-                - solution
-                - activeTarget
-                - updateRte
+              $ref: '#/components/schemas/ConvertSolutionParams'
     ConvertSolutionResult:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
@@ -1332,17 +1329,7 @@ components:
               type: string
               const: DiscoverLayers
             params:
-              type: object
-              properties:
-                solution:
-                  type: string
-                  description: Path to <solution>.csolution.yml
-                activeTarget:
-                  type: string
-                  description: Active target set in the format <target-type>[@<set>]
-              required:
-                - solution
-                - activeTarget
+              $ref: '#/components/schemas/LoadSolutionParams'
     DiscoverLayersResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
@@ -1357,17 +1344,7 @@ components:
               type: string
               const: ListMissingPacks
             params:
-              type: object
-              properties:
-                solution:
-                  type: string
-                  description: Path to <solution>.csolution.yml
-                activeTarget:
-                  type: string
-                  description: Active target set in the format <target-type>[@<set>]
-              required:
-                - solution
-                - activeTarget
+              $ref: '#/components/schemas/LoadSolutionParams'
     ListMissingPacksResult:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
