@@ -271,6 +271,26 @@ using namespace jsonrpccxx;\n`;
     }
   }
 
+  public genCppParams(name: string, cppParams: string[], cppRegParams: string[]) {
+    const struct = this.structs[name];
+    if (struct) {
+      if (struct.extends) {
+        for (const parent of struct.extends) {
+          if (parent in this.structs) {
+            this.genCppParams(parent, cppParams, cppRegParams);
+          }
+        }
+      }
+      if (struct.members) {
+        for (const element of struct.members) {
+          const cppType = element.cppType in this.structs ? `RpcArgs::${element.cppType}` : element.cppType;
+          cppParams.push(`const ${cppType}& ${element.name}`);
+          cppRegParams.push(`"${element.name}"`);
+        }
+      }
+    }
+  }
+
   public collectFunction(name: string, params: any, result: any, description?: string) {
     const cppResult = this.getType(name, result, 'Result', 'RpcArgs::').cpp;
     let cppFunction = `virtual ${cppResult} ${name}(`;
@@ -282,13 +302,15 @@ using namespace jsonrpccxx;\n`;
     const tsFunction = `${this.pascalToCamel(name)}(${tsParamsType ? `args: ${tsParamsType}` : ``}): Promise<${tsResultType}>`;
     const tsImplementation = `this.get('${name}'${tsParamsType ? `, args` : ``})`;
 
-    if (params && params.properties) {
-      const cppParams: string[] = [];
-      const cppRegParams: string[] = [];
-      for (const [param, item] of Object.entries(params.properties)) {
-        cppParams.push(`const ${this.getType(name, item, '', 'RpcArgs::').cpp}& ${param}`);
-        cppRegParams.push(`"${param}"`);
-      }
+    let paramsName = this.getTypeName(name, 'Params');
+    if ((params as any)?.$ref) {
+      const ref = (params as any).$ref.match(/^#\/components\/schemas\/(.*)/);
+      paramsName = ref[1];
+    }
+    const cppParams: string[] = [];
+    const cppRegParams: string[] = [];
+    this.genCppParams(paramsName, cppParams, cppRegParams);
+    if (cppParams.length > 0) {
       cppFunction += cppParams.join(", ");
       cppRegistration += `, { ${cppRegParams.join(', ')} }`;
     } else {
