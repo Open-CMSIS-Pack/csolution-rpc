@@ -98,6 +98,19 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/GetPacksInfoResponse'}}}
+  /rpc/SelectPack:
+    post:
+      summary: Select pack
+      description: Select pack
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/SelectPackRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/SelectPackResponse'}}}
+
+
   /rpc/GetDeviceList:
     post:
       summary: Get device list
@@ -244,7 +257,7 @@ paths:
   /rpc/ListMissingPacks:
     post:
       summary: ListMissingPacks
-      description: List missing (not installed) packs required by the active target-set 
+      description: List missing (not installed) packs required by the active target-set
       tags: [/rpc]
       requestBody:
         content: {application/json: {schema: {$ref: '#/components/schemas/ListMissingPacksRequest'}}}
@@ -1010,6 +1023,33 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/PacksInfo'
+    SelectPackRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: SelectPack
+            params:
+              type: object
+              properties:
+                context:
+                  type: string
+                select:
+                  type: boolean
+                  description: true to select pack or modify its properties, false to remove selection
+                pack:
+                  $ref: '#/components/schemas/Pack'
+              required:
+                - context
+                - select
+                - pack
+    SelectPackResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/SuccessResult'
     GetUsedItemsRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -1276,7 +1316,7 @@ components:
               filter:
                 $ref: '#/components/schemas/DraftProjectsFilter'
              required:
-               - filter  
+               - filter
     GetDraftProjectsResponse:
        allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
