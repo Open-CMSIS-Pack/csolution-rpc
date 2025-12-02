@@ -1015,8 +1015,11 @@ components:
               properties:
                 context:
                   type: string
+                all:
+                  type: boolean
               required:
                 - context
+                - all
     GetPacksInfoResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
