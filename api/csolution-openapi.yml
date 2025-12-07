@@ -98,6 +98,19 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/GetPacksInfoResponse'}}}
+  /rpc/SelectPack:
+    post:
+      summary: Select pack
+      description: Select pack
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/SelectPackRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/SelectPackResponse'}}}
+
+
   /rpc/GetDeviceList:
     post:
       summary: Get device list
@@ -244,7 +257,7 @@ paths:
   /rpc/ListMissingPacks:
     post:
       summary: ListMissingPacks
-      description: List missing (not installed) packs required by the active target-set 
+      description: List missing (not installed) packs required by the active target-set
       tags: [/rpc]
       requestBody:
         content: {application/json: {schema: {$ref: '#/components/schemas/ListMissingPacksRequest'}}}
@@ -287,21 +300,40 @@ components:
             pack:
               type: string
               description: Originating pack ID
+    PackReference:
+      type: object
+      properties:
+        pack:
+          type: string
+          description: Requested pack ID or range, in the same format as stored in YAML file
+        resolvedPack:
+          type: string
+          description: Resolved pack full ID including version, empty if not resolved
+        path:
+          type: string
+          description: Optional path to local pack
+        origin:
+          type: string
+          description: Originating YAML file
+        selected:
+          type: boolean
+          description: Flag to indicate if reference is selected
+      required:
+        - pack
+        - origin
+        - selected
     Pack:
       allOf:
         - $ref: '#/components/schemas/Common'
         - properties:
-            overview:
-              type: string
-              description: Pack overview
             used:
               type: boolean
               description: True when pack is used in the current context
             references:
               type: array
-              description: List of yml files where the pack is referenced
+              description: List of references in YAML files
               items:
-                type: string
+                $ref: '#/components/schemas/PackReference'
     PacksInfo:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
@@ -679,7 +711,7 @@ components:
             packs:
               type: array
               items:
-                $ref: '#/components/schemas/Pack'
+                $ref: '#/components/schemas/PackReference'
           required:
             - components
             - packs
@@ -1002,14 +1034,41 @@ components:
               properties:
                 context:
                   type: string
+                all:
+                  type: boolean
               required:
                 - context
+                - all
     GetPacksInfoResponse:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
         - properties:
             result:
               $ref: '#/components/schemas/PacksInfo'
+    SelectPackRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: SelectPack
+            params:
+              type: object
+              properties:
+                context:
+                  type: string
+                pack:
+                  description: pack data to select/unselect pack or modify its properties
+                  $ref: '#/components/schemas/PackReference'
+              required:
+                - context
+                - pack
+    SelectPackResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/SuccessResult'
     GetUsedItemsRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
@@ -1276,7 +1335,7 @@ components:
               filter:
                 $ref: '#/components/schemas/DraftProjectsFilter'
              required:
-               - filter  
+               - filter
     GetDraftProjectsResponse:
        allOf:
         - $ref: '#/x-jsonrpc-envelope-response'
