@@ -109,8 +109,6 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/SelectPackResponse'}}}
-
-
   /rpc/GetDeviceList:
     post:
       summary: Get device list
@@ -265,6 +263,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/ListMissingPacksResponse'}}}
+  /rpc/GetVariables:
+    post:
+      summary: Get map of resolved variables
+      description: Get map of resolved variables for specified context
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/GetVariablesRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/GetVariablesResponse'}}}
 
 components:
   schemas:
@@ -731,7 +740,6 @@ components:
               type: array
               items:
                 type: string
-
     DraftProjectsFilter:
       type: object
       properties:
@@ -905,7 +913,37 @@ components:
               description: Possible configurations for the reference application
               items:
                 $ref: '#/components/schemas/VariablesConfiguration'
-
+    VariablesResult:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResult'
+        - properties:
+            variables:
+              type: object
+              additionalProperties:
+                type: string
+              description: Resolved context variables
+          required:
+            - variables
+    GetVariablesRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request'
+        - properties:
+            method:
+              type: string
+              const: GetVariables
+            params:
+              type: object
+              properties:
+                context:
+                  type: string
+              required:
+                - context
+    GetVariablesResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/VariablesResult'
     GetVersionRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request'
