@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: csolution rpc
-  version: 0.0.7
+  version: 0.0.8
   description: Specification of remote procedure call methods for CMSIS csolution integration
   license:
     name: Apache 2.0
@@ -87,6 +87,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/GetUsedItemsResponse'}}}
+  /rpc/GetContextInfo:
+    post:
+      summary: Get combined context info (device, board, variables, components and packs used()
+      description: Get used items
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/GetContextInfoRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/GetContextInfoResponse'}}}
   /rpc/GetPacksInfo:
     post:
       summary: Get packs information
@@ -324,6 +335,9 @@ components:
         origin:
           type: string
           description: Originating YAML file
+        overview:
+          type: string
+          description: Brief pack overview (if resolved)
         selected:
           type: boolean
           description: Flag to indicate if reference is selected
@@ -724,6 +738,22 @@ components:
           required:
             - components
             - packs
+    ContextInfo:
+      allOf:
+        - $ref: '#/components/schemas/UsedItems'
+        - properties:
+            board:
+              $ref: '#/components/schemas/Board'
+            device:
+              $ref: '#/components/schemas/Device'
+            variables:
+              type: object
+              additionalProperties:
+                type: string
+              description: Resolved context variables
+          required:
+            - device
+            - variables
     LogMessages:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
@@ -1127,6 +1157,26 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/UsedItems'
+    GetContextInfoRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: GetContextInfo
+            params:
+              type: object
+              properties:
+                context:
+                  type: string
+              required:
+                - context
+    GetContextInfoResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/ContextInfo'
     GetDeviceListRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'
