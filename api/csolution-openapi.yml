@@ -89,8 +89,8 @@ paths:
           content: {application/json: {schema: {$ref: '#/components/schemas/GetUsedItemsResponse'}}}
   /rpc/GetContextInfo:
     post:
-      summary: Get combined context info (device, board, variables, components and packs used()
-      description: Get used items
+      summary: Get combined context info
+      description: Get combined context info (device, board, variables, components and packs used)
       tags: [/rpc]
       requestBody:
         content: {application/json: {schema: {$ref: '#/components/schemas/GetContextInfoRequest'}}}
@@ -738,6 +738,11 @@ components:
           required:
             - components
             - packs
+    Variables:
+      type: object
+      additionalProperties:
+        type: string
+      description: Resolved context variables
     ContextInfo:
       allOf:
         - $ref: '#/components/schemas/UsedItems'
@@ -747,10 +752,7 @@ components:
             device:
               $ref: '#/components/schemas/Device'
             variables:
-              type: object
-              additionalProperties:
-                type: string
-              description: Resolved context variables
+              $ref: '#/components/schemas/Variables'
           required:
             - device
             - variables
@@ -948,10 +950,7 @@ components:
         - $ref: '#/components/schemas/SuccessResult'
         - properties:
             variables:
-              type: object
-              additionalProperties:
-                type: string
-              description: Resolved context variables
+              $ref: '#/components/schemas/Variables'
           required:
             - variables
     GetVariablesRequest:

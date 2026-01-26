@@ -246,6 +246,19 @@ using namespace jsonrpccxx;\n`;
           optional: obj.required ? !(obj.required as any).includes(element) : true,
         });
       }
+    } else if (obj.additionalProperties) {
+      // Handle types defined with additionalProperties (e.g., map/record types)
+      const {cpp, ts} = this.getType(name, obj.additionalProperties);
+      this.structs[name] = {
+        description: obj.description,
+        members: [{
+          name: '',
+          cppType: `map<string, ${cpp}>`,
+          tsType: `Record<string, ${ts}>`,
+          description: obj.description,
+          optional: false,
+        }]
+      };
     }
   }
 
@@ -257,6 +270,9 @@ using namespace jsonrpccxx;\n`;
         this.collectStructs(this.getTypeName(name), item);
       }
       this.collectStruct(parent, obj.items ?? obj);
+    } else if (obj.additionalProperties) {
+      // Handle objects with additionalProperties but no properties (e.g., Variables)
+      this.collectStruct(parent, obj);
     }
     if (obj.allOf && Array.isArray(obj.allOf)) {
       for (const item of obj.allOf) {
@@ -395,24 +411,29 @@ using namespace jsonrpccxx;\n`;
       const forwardDeclaration = new Set<string>;
       //TODO: content += `${struct.description ? `  // ${struct.description}\n` : ''}`;
       if (struct.members) {
-        structContent += `  struct ${name}`;
-        if (struct.extends) {
-          const baseClasses = (struct.extends.map(s => `public ${s}`)).join(', ');
-          structContent += ` : ${baseClasses}`;
-        }
-        structContent +=` {\n`;
-        for (const element of struct.members) {
-          // need forward declarations
-          const s = element.cppType.match(/(?:vector<)?(\w+)>?/);
-          if (s && s[1] in this.structs && !declaredStructs.includes(s[1])) {
-            forwardDeclaration.add(s[1]);
+        // Check if this is a type alias (single member with empty name)
+        if (struct.members.length === 1 && struct.members[0].name === '') {
+          structContent += `  using ${name} = ${struct.members[0].cppType};\n`;
+        } else {
+          structContent += `  struct ${name}`;
+          if (struct.extends) {
+            const baseClasses = (struct.extends.map(s => `public ${s}`)).join(', ');
+            structContent += ` : ${baseClasses}`;
           }
-          const cppStruct = `${element.optional ? `optional<${element.cppType}>` :
-            `${element.cppType}`} ${this.kebabToCamel(element.name)};`;
-            structContent += `    ${cppStruct}\n`;
-          //TODO: content += `${element.description ? ` // ${element.description}` : ``}\n`;
+          structContent +=` {\n`;
+          for (const element of struct.members) {
+            // need forward declarations
+            const s = element.cppType.match(/(?:vector<)?(\w+)>?/);
+            if (s && s[1] in this.structs && !declaredStructs.includes(s[1])) {
+              forwardDeclaration.add(s[1]);
+            }
+            const cppStruct = `${element.optional ? `optional<${element.cppType}>` :
+              `${element.cppType}`} ${this.kebabToCamel(element.name)};`;
+              structContent += `    ${cppStruct}\n`;
+            //TODO: content += `${element.description ? ` // ${element.description}` : ``}\n`;
+          }
+          structContent += `  };\n`;
         }
-        structContent += `  };\n`;
       } else {
         if (struct.extends) {
           const baseClasses = struct.extends.join(', ');
@@ -429,7 +450,7 @@ using namespace jsonrpccxx;\n`;
     content += `\n${this.cppToJsonTemplates}`;
     for (const name in this.structs) {
       const struct = this.structs[name];
-      if (struct.members) {
+      if (struct.members && !(struct.members.length === 1 && struct.members[0].name === '')) {
         content += `  inline void to_json(nlohmann::json& j, const ${name}& s) {\n`;
         content += this.genParentJsonTypeMap('to_json', struct);
         content += this.genJsonTypeMap('to_json', struct.members);
@@ -441,7 +462,7 @@ using namespace jsonrpccxx;\n`;
     content += `\n${this.cppFromJsonTemplates}`;
     for (const name in this.structs) {
       const struct = this.structs[name];
-      if (struct.members) {
+      if (struct.members && !(struct.members.length === 1 && struct.members[0].name === '')) {
         content += `  inline void from_json(const nlohmann::json& j, ${name}& s) {\n`;
         content += this.genParentJsonTypeMap('from_json', struct);
         content += this.genJsonTypeMap('from_json', struct.members);
@@ -465,17 +486,22 @@ ${this.genCppNamespace()}\n${this.genCppClass()}\n${this.cppFooter}\n`;
     for (const name in this.structs) {
       const struct = this.structs[name];
       if (struct.members) {
-        content += `export interface ${name}`;
-        if (struct.extends) {
-          const baseClasses = struct.extends.join(', ');
-          content += ` extends ${baseClasses}`;
+        // Check if this is a type alias (single member with empty name)
+        if (struct.members.length === 1 && struct.members[0].name === '') {
+          content += `export type ${name} = ${struct.members[0].tsType};\n`;
+        } else {
+          content += `export interface ${name}`;
+          if (struct.extends) {
+            const baseClasses = struct.extends.join(', ');
+            content += ` extends ${baseClasses}`;
+          }
+          content += ` {\n`;
+          for (const element of struct.members) {
+            const tsInterface = `${this.quoteIfDashed(element.name)}${element.optional ? '?' : ''}: ${element.tsType},`;
+            content += `    ${tsInterface}\n`;
+          }
+          content += `}\n`;
         }
-        content += ` {\n`;
-        for (const element of struct.members) {
-          const tsInterface = `${this.quoteIfDashed(element.name)}${element.optional ? '?' : ''}: ${element.tsType},`;
-          content += `    ${tsInterface}\n`;
-        }
-        content += `}\n`;
       } else {
         if (struct.extends) {
           const baseClasses = struct.extends.join(', ');
