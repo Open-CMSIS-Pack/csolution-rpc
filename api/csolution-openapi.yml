@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: csolution rpc
-  version: 0.0.7
+  version: 0.0.8
   description: Specification of remote procedure call methods for CMSIS csolution integration
   license:
     name: Apache 2.0
@@ -87,6 +87,17 @@ paths:
         '200':
           description: OK
           content: {application/json: {schema: {$ref: '#/components/schemas/GetUsedItemsResponse'}}}
+  /rpc/GetContextInfo:
+    post:
+      summary: Get combined context info
+      description: Get combined context info (device, board, variables, components and packs used)
+      tags: [/rpc]
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/GetContextInfoRequest'}}}
+      responses:
+        '200':
+          description: OK
+          content: {application/json: {schema: {$ref: '#/components/schemas/GetContextInfoResponse'}}}
   /rpc/GetPacksInfo:
     post:
       summary: Get packs information
@@ -288,6 +299,10 @@ components:
           description: optional error/warning/info message
       required:
         - success
+    Attributes:
+      type: object
+      additionalProperties:
+        type: string
     Common:
       type: object
       properties:
@@ -391,9 +406,8 @@ components:
           type: string
           description: Processor core type
         attributes:
-          type: object
-          additionalProperties:
-            type: string
+          $ref: '#/components/schemas/Attributes'
+          description: Processor attributes
       required:
         - core
     Memory:
@@ -724,6 +738,32 @@ components:
           required:
             - components
             - packs
+    Variables:
+      type: object
+      additionalProperties:
+        type: string
+      description: Resolved context variables
+    ContextInfo:
+      allOf:
+        - $ref: '#/components/schemas/UsedItems'
+        - properties:
+            board:
+              $ref: '#/components/schemas/Board'
+            device:
+              $ref: '#/components/schemas/Device'
+            pname:
+              type: string
+              description: Processor name used in context
+            variables:
+              $ref: '#/components/schemas/Variables'
+            attributes:
+              $ref: '#/components/schemas/Attributes'
+              description: RTE target attributes
+          required:
+            - device
+            - pname
+            - attributes
+            - variables
     LogMessages:
       allOf:
         - $ref: '#/components/schemas/SuccessResult'
@@ -918,10 +958,7 @@ components:
         - $ref: '#/components/schemas/SuccessResult'
         - properties:
             variables:
-              type: object
-              additionalProperties:
-                type: string
-              description: Resolved context variables
+              $ref: '#/components/schemas/Variables'
           required:
             - variables
     GetVariablesRequest:
@@ -1127,6 +1164,26 @@ components:
         - properties:
             result:
               $ref: '#/components/schemas/UsedItems'
+    GetContextInfoRequest:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-request-with-params'
+        - properties:
+            method:
+              type: string
+              const: GetContextInfo
+            params:
+              type: object
+              properties:
+                context:
+                  type: string
+              required:
+                - context
+    GetContextInfoResponse:
+      allOf:
+        - $ref: '#/x-jsonrpc-envelope-response'
+        - properties:
+            result:
+              $ref: '#/components/schemas/ContextInfo'
     GetDeviceListRequest:
       allOf:
         - $ref: '#/x-jsonrpc-envelope-request-with-params'

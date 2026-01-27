@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2025-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -44,10 +44,16 @@ export interface Member {
   optional?: boolean;
 }
 
+export interface CustomType {
+  cppType: string;
+  tsType: string;
+}
+
 export interface Struct {
   description?: string;
   members?: Member[];
   extends?: string[];
+  customType?: CustomType;
 }
 
 export interface Function {
@@ -66,7 +72,7 @@ export class Codegen {
 
   readonly header =
 `/*
- * Copyright (c) 2025 Arm Limited. All rights reserved.
+ * Copyright (c) 2025-2026 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -257,6 +263,12 @@ using namespace jsonrpccxx;\n`;
         this.collectStructs(this.getTypeName(name), item);
       }
       this.collectStruct(parent, obj.items ?? obj);
+    } else if (obj.additionalProperties) {
+      // Handle types defined with additionalProperties (e.g., map/record types)
+      const {cpp, ts} = this.getType(parent, obj);
+      this.structs[parent] = {
+        description: obj.description,
+        customType: { cppType: cpp, tsType: ts } };
     }
     if (obj.allOf && Array.isArray(obj.allOf)) {
       for (const item of obj.allOf) {
@@ -394,6 +406,9 @@ using namespace jsonrpccxx;\n`;
       let structContent = '';
       const forwardDeclaration = new Set<string>;
       //TODO: content += `${struct.description ? `  // ${struct.description}\n` : ''}`;
+      if (struct.customType) {
+        structContent += `  using ${name} = ${struct.customType.cppType};\n`;
+      }
       if (struct.members) {
         structContent += `  struct ${name}`;
         if (struct.extends) {
@@ -464,6 +479,9 @@ ${this.genCppNamespace()}\n${this.genCppClass()}\n${this.cppFooter}\n`;
     let content = '';
     for (const name in this.structs) {
       const struct = this.structs[name];
+      if (struct.customType) {
+        content += `export type ${name} = ${struct.customType.tsType};\n`;
+      }
       if (struct.members) {
         content += `export interface ${name}`;
         if (struct.extends) {
