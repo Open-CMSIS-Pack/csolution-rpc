@@ -299,6 +299,10 @@ components:
           description: optional error/warning/info message
       required:
         - success
+    Attributes:
+      type: object
+      additionalProperties:
+        type: string
     Common:
       type: object
       properties:
@@ -405,9 +409,8 @@ components:
           type: string
           description: Processor core type
         attributes:
-          type: object
-          additionalProperties:
-            type: string
+          $ref: '#/components/schemas/Attributes'
+          description: Processor attributes
       required:
         - core
     Memory:
@@ -751,10 +754,18 @@ components:
               $ref: '#/components/schemas/Board'
             device:
               $ref: '#/components/schemas/Device'
+            pname:
+              type: string
+              description: Processor name used in context
             variables:
               $ref: '#/components/schemas/Variables'
+            attributes:
+              $ref: '#/components/schemas/Attributes'
+              description: RTE target attributes
           required:
             - device
+            - pname
+            - attributes
             - variables
     LogMessages:
       allOf:
