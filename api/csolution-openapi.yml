@@ -339,9 +339,6 @@ components:
         origin:
           type: string
           description: Originating YAML file
-        overview:
-          type: string
-          description: Brief pack overview (if resolved)
         selected:
           type: boolean
           description: Flag to indicate if reference is selected
