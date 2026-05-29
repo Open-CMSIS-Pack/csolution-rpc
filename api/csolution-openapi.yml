@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: csolution rpc
-  version: 0.0.10
+  version: 0.0.11
   description: Specification of remote procedure call methods for CMSIS csolution integration
   license:
     name: Apache 2.0
@@ -344,7 +344,13 @@ components:
           description: Flag to indicate if reference is selected
         upgrade:
           type: string
-          description: Greater compliant pack version is available for the locked resolved pack
+          description: Greater compliant pack version is available for the locked pack
+        locked:
+          type: string
+          description: Locked pack identifier
+        missing:
+          type: boolean
+          description: True if pack is not installed
       required:
         - pack
         - origin
