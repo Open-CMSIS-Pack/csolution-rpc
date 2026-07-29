@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: csolution rpc
-  version: 0.0.11
+  version: 0.0.12
   description: Specification of remote procedure call methods for CMSIS csolution integration
   license:
     name: Apache 2.0
@@ -687,6 +687,9 @@ components:
     Condition:
       type: object
       properties:
+        result:
+          type: string
+          description: 'Condition result: https://github.com/Open-CMSIS-Pack/devtools/blob/tools/projmgr/2.8.0/libs/rtemodel/include/RteItem.h#L78-L95'
         expression:
           type: string
           description: Condition expression (accept, require, deny ...)
