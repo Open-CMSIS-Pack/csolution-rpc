@@ -7,7 +7,7 @@ registries:
     token: ${{secrets.GH_PACKAGES_TOKEN}}
 
 updates:
-  # Maintain dependencies for GitHub Actions
+  # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -15,14 +15,20 @@ updates:
     open-pull-requests-limit: 5
     rebase-strategy: disabled
     groups:
-      codeql-actions:
+      github-actions:
         patterns:
           - "*"
 
-  # Maintain dependencies for the JavaScript package
+  # npm dependencies
   - package-ecosystem: "npm"
     directory: "/"
     registries:
       - npm-github
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
+    rebase-strategy: disabled
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
