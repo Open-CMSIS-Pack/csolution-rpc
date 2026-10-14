@@ -29,6 +29,10 @@ updates:
     open-pull-requests-limit: 5
     rebase-strategy: disabled
     groups:
+      vscode-dependencies:
+        patterns:
+          - "@vscode/*"
+
       npm-dependencies:
         patterns:
           - "*"
